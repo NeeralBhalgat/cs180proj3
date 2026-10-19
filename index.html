@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Neeral Bhalgat · Fun with Flow Models
+  </title>
+  <meta content="CS180 Project 3 by Neeral Bhalgat: pretrained flow experiments and MNIST denoising and flow matching models trained from scratch." name="description"/>
+  <link href="style.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <a class="skip" href="#main">
+   Skip to results
+  </a>
+  <header>
+   <a href="#top">
+    NB / COMPUTATIONAL PHOTOGRAPHY
+   </a>
+   <span>
+    UC BERKELEY · FALL 2026
+   </span>
+  </header>
+  <div class="layout">
+   <aside>
+    <div class="nav-title">
+     PART A · EXPLORATIONS
+    </div>
+    <nav aria-label="Project sections">
+     <a href="#a-1-1">
+      <b>
+       1.1
+      </b>
+      From a photograph to noise
+     </a>
+     <a href="#a-1-2">
+      <b>
+       1.2
+      </b>
+      A classical baseline
+     </a>
+     <a href="#a-1-3">
+      <b>
+       1.3
+      </b>
+      One prediction toward the endpoint
+     </a>
+     <a href="#a-1-4">
+      <b>
+       1.4
+      </b>
+      What does the model add?
+     </a>
+     <a href="#a-1-5">
+      <b>
+       1.5
+      </b>
+      Following the flow
+     </a>
+     <a href="#a-1-6">
+      <b>
+       1.6
+      </b>
+      Images from pure noise
+     </a>
+     <a href="#a-2-1">
+      <b>
+       2.1
+      </b>
+      Strengthening the condition
+     </a>
+     <a href="#a-3-1">
+      <b>
+       3.1
+      </b>
+      How much of an image survives?
+     </a>
+     <a href="#a-3-2">
+      <b>
+       3.2
+      </b>
+      Editing with a destination in mind
+     </a>
+     <a href="#a-3-3">
+      <b>
+       3.3
+      </b>
+      Two readings, one image
+     </a>
+     <a href="#a-3-4">
+      <b>
+       3.4
+      </b>
+      Different subjects at different scales
+     </a>
+     <div class="nav-title partb-nav">
+      PART B · LEARNING THE FLOW
+     </div>
+     <a class="partb-nav" href="#b-1-1">
+      <b>
+       1.1
+      </b>
+      Building the UNet
+     </a>
+     <a class="partb-nav" href="#b-1-2">
+      <b>
+       1.2
+      </b>
+      Adding noise
+     </a>
+     <a class="partb-nav" href="#b-1-2-1">
+      <b>
+       1.2.1
+      </b>
+      Denoiser training
+     </a>
+     <a class="partb-nav" href="#b-1-2-2">
+      <b>
+       1.2.2
+      </b>
+      OOD testing
+     </a>
+     <a class="partb-nav" href="#b-1-2-3">
+      <b>
+       1.2.3
+      </b>
+      Denoising pure noise
+     </a>
+     <a class="partb-nav" href="#b-2-1">
+      <b>
+       2.1
+      </b>
+      Time conditioning
+     </a>
+     <a class="partb-nav" href="#b-2-2">
+      <b>
+       2.2
+      </b>
+      Time model training
+     </a>
+     <a class="partb-nav" href="#b-2-3">
+      <b>
+       2.3
+      </b>
+      Time model samples
+     </a>
+     <a class="partb-nav" href="#b-2-4">
+      <b>
+       2.4
+      </b>
+      Class conditioning
+     </a>
+     <a class="partb-nav" href="#b-2-5">
+      <b>
+       2.5
+      </b>
+      Class model training
+     </a>
+     <a class="partb-nav" href="#b-2-6">
+      <b>
+       2.6
+      </b>
+      Guidance &amp; comparison
+     </a>
+    </nav>
+    <button onclick="window.print()">
+     Print / save PDF ↗
+    </button>
+   </aside>
+   <main id="main">
+    <div class="hero" id="top">
+     <p class="eyebrow">
+      CS180 / PROJECT 03 / PART A + B
+     </p>
+     <h1>
+      Fun with
+      <br/>
+      <em>
+       Flow Models.
+      </em>
+     </h1>
+     <p class="intro">
+      From image editing and visual illusions
+      <br/>
+      to training a digit generator from scratch.
+     </p>
+     <p class="byline">
+      Neeral Bhalgat
+      <span>
+       October 2026
+      </span>
+     </p>
+     <div class="downloads">
+      <a href="downloads/cs180-parta-portfolio.pdf">
+       Part A PDF ↗
+      </a>
+      <a download="" href="downloads/cs180-parta-code.zip">
+       Part A notebook &amp; code ↓
+      </a>
+      <a class="partb-download" href="downloads/cs180-project3-portfolio.pdf">
+       Combined A+B PDF ↗
+      </a>
+      <a class="partb-download" href="downloads/cs180-partb-portfolio.pdf">
+       Part B PDF ↗
+      </a>
+      <a class="partb-download" download="" href="downloads/cs180-partb-code.zip">
+       Part B notebook &amp; code ↓
+      </a>
+      <a class="partb-download" href="#b-1-1">
+       Explore Part B →
+      </a>
+     </div>
+     <div class="hero-images">
+      <img alt="Original Luke sunset scene" height="512" src="assets/velocity_original.png" width="512"/>
+      <span>
+       ·
+      </span>
+      <img alt="Generated lion and forest visual anagram" height="512" src="assets/anagram_1.png" width="512"/>
+     </div>
+     <p class="hero-caption">
+      Denoising input (left) · Independently generated visual anagram (right)
+     </p>
+     <div class="settings">
+      <span>
+       PixNerd XXL
+      </span>
+      <span>
+       512 × 512
+      </span>
+      <span>
+       Euler h = 0.02
+      </span>
+      <span>
+       CFG w = 7
+      </span>
+     </div>
+    </div>
+    <div class="overview" data-copy-id="A0">
+     Part A explores the concepts of denoising, guidance, and image editing with a pretrained flow model. In Part B we build a Unet from scratch and train it to denoise and generate images (MNIST digits).
+    </div>
+    <section id="a-1-1">
+     <div class="section-head">
+      <span>
+       1.1
+      </span>
+      <h2>
+       From a photograph to noise
+      </h2>
+     </div>
+     <p data-copy-id="A1">
+      For sections 1.1 - 1.5 I used the Luke Skywalker desert sunset image. The input is center cropped to 512 x 512 and normalized to [-1, 1]. A single Gaussian noise tensor (seed 180) is reused all 3 times. This makes sure the differences only come from interpolation weight.
+     </p>
+     <div class="equation">
+      x
+      <sub>
+       t
+      </sub>
+      = (1 − t)ε + tx
+      <sub>
+       1
+      </sub>
+     </div>
+     <figure class="">
+      <a aria-label="Enlarge: Original, then t = 0.25, 0.50, 0.75 (left to right)." class="zoom" href="assets/training_inputs.png">
+       <img alt="Original, then t = 0.25, 0.50, 0.75 (left to right)." height="440" loading="lazy" src="assets/training_inputs.png" width="1760"/>
+      </a>
+      <figcaption>
+       Original, then t = 0.25, 0.50, 0.75 (left to right).
+      </figcaption>
+     </figure>
+     <p data-copy-id="A2">
+      At t = 0.25, noise obscures the high level details and the backgrounds. At t = 0.75, the overall horizon, silhouette and pinky sky are easy to recognize. Most fine details are also recognizable. As we increase time, we move more towards the clean image.
+     </p>
+    </section>
+    <section id="a-1-2">
+     <div class="section-head">
+      <span>
+       1.2
+      </span>
+      <h2>
+       A classical baseline
+      </h2>
+     </div>
+     <p data-copy-id="A3">
+      I first divide each noisy input by t in order to restore the image amplitude. Then I applied Gaussian blur for sigma values in (1, 2, 4, 8, 16). I chose the lowest MSE against the known original separately for each input. This uses the clean reference to select a baseline; and it is not blind denoising.
+     </p>
+     <div class="equation">
+      x̂
+      <sub>
+       1
+      </sub>
+      = G
+      <sub>
+       σ
+      </sub>
+      (x
+      <sub>
+       t
+      </sub>
+      / t)
+     </div>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.25 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." class="zoom" href="assets/blur_0.25.png">
+       <img alt="t = 0.25 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." height="440" loading="lazy" src="assets/blur_0.25.png" width="880"/>
+      </a>
+      <figcaption>
+       t = 0.25 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result.
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.50 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." class="zoom" href="assets/blur_0.5.png">
+       <img alt="t = 0.50 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." height="440" loading="lazy" src="assets/blur_0.5.png" width="880"/>
+      </a>
+      <figcaption>
+       t = 0.50 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result.
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.75 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." class="zoom" href="assets/blur_0.75.png">
+       <img alt="t = 0.75 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result." height="440" loading="lazy" src="assets/blur_0.75.png" width="880"/>
+      </a>
+      <figcaption>
+       t = 0.75 · Noisy input (left), selected Gaussian blur (right). The selected σ appears above the result.
+      </figcaption>
+     </figure>
+     <p data-copy-id="A4">
+      Averaging suppresses noise but also softens the person, buildings, and foreground texture. The flat sky is easier to recover than the small details.
+     </p>
+    </section>
+    <section id="a-1-3">
+     <div class="section-head">
+      <span>
+       1.3
+      </span>
+      <h2>
+       One prediction toward the endpoint
+      </h2>
+     </div>
+     <p data-copy-id="A5">
+      We modify the pretrained model to predict velocity from the current image, the time, and a prompt - "a high quality photo". We estimate the clean endpoint in 1 shot after predicting the velocity.
+     </p>
+     <div class="equation">
+      x̂
+      <sub>
+       1
+      </sub>
+      = x
+      <sub>
+       t
+      </sub>
+      + (1 − t)v
+      <sub>
+       θ
+      </sub>
+      (x
+      <sub>
+       t
+      </sub>
+      , t, c)
+     </div>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.25 · Original, noisy input, one-step estimate (left to right)." class="zoom" href="assets/one_step_0.25.png">
+       <img alt="t = 0.25 · Original, noisy input, one-step estimate (left to right)." height="440" loading="lazy" src="assets/one_step_0.25.png" width="1320"/>
+      </a>
+      <figcaption>
+       t = 0.25 · Original, noisy input, one-step estimate (left to right).
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.50 · Original, noisy input, one-step estimate (left to right)." class="zoom" href="assets/one_step_0.5.png">
+       <img alt="t = 0.50 · Original, noisy input, one-step estimate (left to right)." height="440" loading="lazy" src="assets/one_step_0.5.png" width="1320"/>
+      </a>
+      <figcaption>
+       t = 0.50 · Original, noisy input, one-step estimate (left to right).
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.75 · Original, noisy input, one-step estimate (left to right)." class="zoom" href="assets/one_step_0.75.png">
+       <img alt="t = 0.75 · Original, noisy input, one-step estimate (left to right)." height="440" loading="lazy" src="assets/one_step_0.75.png" width="1320"/>
+      </a>
+      <figcaption>
+       t = 0.75 · Original, noisy input, one-step estimate (left to right).
+      </figcaption>
+     </figure>
+     <p data-copy-id="A6">
+      The new learned estimate preserves more sharp scene components and structure compared to Gaussian blur. The larger the starting time, the more information about the image provided to the model -- the smaller the extrapolation the better it seems.
+     </p>
+    </section>
+    <section id="a-1-4">
+     <div class="section-head">
+      <span>
+       1.4
+      </span>
+      <h2>
+       What does the model add?
+      </h2>
+     </div>
+     <p data-copy-id="A7">
+      I compare the predicted updates with the exact updates using the same image and noise pair to keep things consistent. To measure the error, I calculate the squared difference at each pixel, average it across the RGB channels, and then take the square root. This is all done before any clipping or scaling for display.
+     </p>
+     <div class="equation">
+      Δ̂ = (1 − t)v̂   ·   Δ = (1 − t)(x
+      <sub>
+       1
+      </sub>
+      − ε)
+      <br/>
+      E = √mean
+      <sub>
+       RGB
+      </sub>
+      [(Δ̂ − Δ)²]
+     </div>
+     <figure class="original">
+      <a aria-label="Enlarge: Original reference image." class="zoom" href="assets/velocity_original.png">
+       <img alt="Original reference image." height="512" loading="lazy" src="assets/velocity_original.png" width="512"/>
+      </a>
+      <figcaption>
+       Original reference image.
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.25 · Noisy input, predicted update, true update, RGB RMS error (left to right)." class="zoom" href="assets/velocity_0.25.png">
+       <img alt="t = 0.25 · Noisy input, predicted update, true update, RGB RMS error (left to right)." height="440" loading="lazy" src="assets/velocity_0.25.png" width="1760"/>
+      </a>
+      <figcaption>
+       t = 0.25 · Noisy input, predicted update, true update, RGB RMS error (left to right).
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.50 · Noisy input, predicted update, true update, RGB RMS error (left to right)." class="zoom" href="assets/velocity_0.50.png">
+       <img alt="t = 0.50 · Noisy input, predicted update, true update, RGB RMS error (left to right)." height="440" loading="lazy" src="assets/velocity_0.50.png" width="1760"/>
+      </a>
+      <figcaption>
+       t = 0.50 · Noisy input, predicted update, true update, RGB RMS error (left to right).
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: t = 0.75 · Noisy input, predicted update, true update, RGB RMS error (left to right)." class="zoom" href="assets/velocity_0.75.png">
+       <img alt="t = 0.75 · Noisy input, predicted update, true update, RGB RMS error (left to right)." height="440" loading="lazy" src="assets/velocity_0.75.png" width="1760"/>
+      </a>
+      <figcaption>
+       t = 0.75 · Noisy input, predicted update, true update, RGB RMS error (left to right).
+      </figcaption>
+     </figure>
+     <p data-copy-id="A8">
+      All updates use the same symmetric RGB display scale, with zero shown as middle gray. The error maps also share the same linear scale - it ranges from zero to the largest error across all three maps. Brighter areas == larger errors which are mostly concentrated around the figure and the textured foreground. The darker map at t = 0.75 shows that the update error is smaller at that point. Since the factor (1-t) also gets smaller, this doesn't necessarily mean the velocity pred is more accurate.
+     </p>
+    </section>
+    <section id="a-1-5">
+     <div class="section-head">
+      <span>
+       1.5
+      </span>
+      <h2>
+       Following the flow
+      </h2>
+     </div>
+     <p data-copy-id="A9">
+      Euler sampling predicts a new velocity at each state. We use step of h = 0.02.Since we use t = 0.50, we take 25 updates. We end once t &gt;= 1.
+     </p>
+     <div class="equation">
+      x
+      <sub>
+       t+h
+      </sub>
+      = x
+      <sub>
+       t
+      </sub>
+      + hv
+      <sub>
+       θ
+      </sub>
+      (x
+      <sub>
+       t
+      </sub>
+      , t, c)
+     </div>
+     <figure class="">
+      <a aria-label="Enlarge: Initial state and every fifth update: t = 0.50, 0.60, 0.70, 0.80, 0.90, 1.00 (row-major order)." class="zoom" href="assets/trajectory.png">
+       <img alt="Initial state and every fifth update: t = 0.50, 0.60, 0.70, 0.80, 0.90, 1.00 (row-major order)." height="880" loading="lazy" src="assets/trajectory.png" width="1320"/>
+      </a>
+      <figcaption>
+       Initial state and every fifth update: t = 0.50, 0.60, 0.70, 0.80, 0.90, 1.00 (row-major order).
+      </figcaption>
+     </figure>
+     <figure class="">
+      <a aria-label="Enlarge: Same t = 0.50 input · Original, Gaussian blur, one-step, Euler (left to right)." class="zoom" href="assets/comparison.png">
+       <img alt="Same t = 0.50 input · Original, Gaussian blur, one-step, Euler (left to right)." height="440" loading="lazy" src="assets/comparison.png" width="1760"/>
+      </a>
+      <figcaption>
+       Same t = 0.50 input · Original, Gaussian blur, one-step, Euler (left to right).
+      </figcaption>
+     </figure>
+     <table>
+      <caption>
+       Reconstruction MSE in normalized tensor space; lower is better
+      </caption>
+      <thead>
+       <tr>
+        <th>
+         Method
+        </th>
+        <th>
+         MSE
+        </th>
+       </tr>
+      </thead>
+      <tbody>
+       <tr>
+        <td>
+         Gaussian blur
+        </td>
+        <td>
+         0.00486194
+        </td>
+       </tr>
+       <tr>
+        <td>
+         One-step
+        </td>
+        <td>
+         0.00139233
+        </td>
+       </tr>
+       <tr>
+        <td>
+         Euler
+        </td>
+        <td>
+         0.00195181
+        </td>
+       </tr>
+      </tbody>
+     </table>
+     <p data-copy-id="A10">
+      Both one step and euler are clearly better than blur. One-step has the lowest MSE in this run, so Euler is not automatically better. Integrating a learned field means following its preferred image trajectory, and this can lead to images that are not exactly similar to the original. However, I do believe if our image had much more finer details, the Euler reconstruction would be most accurate.
+     </p>
+    </section>
+    <section id="a-1-6">
+     <div class="section-head">
+      <span>
+       1.6
+      </span>
+      <h2>
+       Images from pure noise
+      </h2>
+     </div>
+     <p data-copy-id="A11">
+      I've performed 50 euler updates for our five gaussian tensors using "a high quality photo" prompt. We start at t = 0 and use Seeds 180-184 for the CFG comparison.
+     </p>
+     <div class="sample-grid">
+      <figure class="">
+       <a aria-label="Enlarge: Seed 180 · Ordinary conditional sampling" class="zoom" href="assets/conditional_0.png">
+        <img alt="Seed 180 · Ordinary conditional sampling" height="512" loading="lazy" src="assets/conditional_0.png" width="512"/>
+       </a>
+       <figcaption>
+        Seed 180 · Ordinary conditional sampling
+       </figcaption>
+      </figure>
+      <figure class="">
+       <a aria-label="Enlarge: Seed 181 · Ordinary conditional sampling" class="zoom" href="assets/conditional_1.png">
+        <img alt="Seed 181 · Ordinary conditional sampling" height="512" loading="lazy" src="assets/conditional_1.png" width="512"/>
+       </a>
+       <figcaption>
+        Seed 181 · Ordinary conditional sampling
+       </figcaption>
+      </figure>
+      <figure class="">
+       <a aria-label="Enlarge: Seed 182 · Ordinary conditional sampling" class="zoom" href="assets/conditional_2.png">
+        <img alt="Seed 182 · Ordinary conditional sampling" height="512" loading="lazy" src="assets/conditional_2.png" width="512"/>
+       </a>
+       <figcaption>
+        Seed 182 · Ordinary conditional sampling
+       </figcaption>
+      </figure>
+      <figure class="">
+       <a aria-label="Enlarge: Seed 183 · Ordinary conditional sampling" class="zoom" href="assets/conditional_3.png">
+        <img alt="Seed 183 · Ordinary conditional sampling" height="512" loading="lazy" src="assets/conditional_3.png" width="512"/>
+       </a>
+       <figcaption>
+        Seed 183 · Ordinary conditional sampling
+       </figcaption>
+      </figure>
+      <figure class="">
+       <a aria-label="Enlarge: Seed 184 · Ordinary conditional sampling" class="zoom" href="assets/conditional_4.png">
+        <img alt="Seed 184 · Ordinary conditional sampling" height="512" loading="lazy" src="assets/conditional_4.png" width="512"/>
+       </a>
+       <figcaption>
+        Seed 184 · Ordinary conditional sampling
+       </figcaption>
+      </figure>
+     </div>
+     <p data-copy-id="A12">
+      Our prompt is generic, but all five samples are still portraits. Seed 180 has a featureless face and Seed 183 has rough painterly facial artifacts. Other samples are much more coherent, but it is clear that this small set shows strong portrait preference.
+     </p>
+    </section>
+    <section id="a-2-1">
+     <div class="section-head">
+      <span>
+       2.1
+      </span>
+      <h2>
+       Strengthening the condition
+      </h2>
+     </div>
+     <p data-copy-id="A13">
+      We use CFG to combine predictions from the prompt - "a high quality photo" and an empty prompt. For Guidance we use w = 7 and h = 0.02.
+     </p>
+     <div class="equation">
+      v
+      <sub>
+       CFG
+      </sub>
+      = v
+      <sub>
+       c
+      </sub>
+      + 7(v
+      <sub>
+       c
+      </sub>
+      − v
+      <sub>
+       u
+      </sub>
+      )
+     </div>
+     <div class="paired-grid">
+      <div>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 180 · Without CFG" class="zoom" href="assets/conditional_0.png">
+         <img alt="Seed 180 · Without CFG" height="512" loading="lazy" src="assets/conditional_0.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 180 · Without CFG
+        </figcaption>
+       </figure>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 180 · CFG, w = 7" class="zoom" href="assets/cfg_0.png">
+         <img alt="Seed 180 · CFG, w = 7" height="512" loading="lazy" src="assets/cfg_0.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 180 · CFG, w = 7
+        </figcaption>
+       </figure>
+      </div>
+      <div>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 181 · Without CFG" class="zoom" href="assets/conditional_1.png">
+         <img alt="Seed 181 · Without CFG" height="512" loading="lazy" src="assets/conditional_1.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 181 · Without CFG
+        </figcaption>
+       </figure>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 181 · CFG, w = 7" class="zoom" href="assets/cfg_1.png">
+         <img alt="Seed 181 · CFG, w = 7" height="512" loading="lazy" src="assets/cfg_1.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 181 · CFG, w = 7
+        </figcaption>
+       </figure>
+      </div>
+      <div>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 182 · Without CFG" class="zoom" href="assets/conditional_2.png">
+         <img alt="Seed 182 · Without CFG" height="512" loading="lazy" src="assets/conditional_2.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 182 · Without CFG
+        </figcaption>
+       </figure>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 182 · CFG, w = 7" class="zoom" href="assets/cfg_2.png">
+         <img alt="Seed 182 · CFG, w = 7" height="512" loading="lazy" src="assets/cfg_2.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 182 · CFG, w = 7
+        </figcaption>
+       </figure>
+      </div>
+      <div>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 183 · Without CFG" class="zoom" href="assets/conditional_3.png">
+         <img alt="Seed 183 · Without CFG" height="512" loading="lazy" src="assets/conditional_3.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 183 · Without CFG
+        </figcaption>
+       </figure>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 183 · CFG, w = 7" class="zoom" href="assets/cfg_3.png">
+         <img alt="Seed 183 · CFG, w = 7" height="512" loading="lazy" src="assets/cfg_3.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 183 · CFG, w = 7
+        </figcaption>
+       </figure>
+      </div>
+      <div>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 184 · Without CFG" class="zoom" href="assets/conditional_4.png">
+         <img alt="Seed 184 · Without CFG" height="512" loading="lazy" src="assets/conditional_4.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 184 · Without CFG
+        </figcaption>
+       </figure>
+       <figure class="">
+        <a aria-label="Enlarge: Seed 184 · CFG, w = 7" class="zoom" href="assets/cfg_4.png">
+         <img alt="Seed 184 · CFG, w = 7" height="512" loading="lazy" src="assets/cfg_4.png" width="512"/>
+        </a>
+        <figcaption>
+         Seed 184 · CFG, w = 7
+        </figcaption>
+       </figure>
+      </div>
+     </div>
+     <p data-copy-id="A14">
+      Due to the extra strength from CFG, we get much more clear facial features and framing. I think this is best shown by seeds 180 and 183. The main take away is that even though the samples are still different in appearance, their general composition is very similar.
+     </p>
+    </section>
+    <section id="a-3-1">
+     <div class="section-head">
+      <span>
+       3.1
+      </span>
+      <h2>
+       How much of an image survives?
+      </h2>
+     </div>
+     <p data-copy-id="A15">
+      I mix each input with fixed seed-180 noise, and then use CFG - “a high quality photo”. Every sweep used h = 0.02 and w = 7. Lower starting times remove more source information and allow stronger reinterpretation.
+     </p>
+     <div class="equation">
+      t
+      <sub>
+       start
+      </sub>
+      ∈ {0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50}
+     </div>
+     <article>
+      <h3>
+       Campanile
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_campanile.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_campanile.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A16">
+       At low starting times, the clock tower gets reinterpreted to a 3d tower, and then to a lighthouse. The details then end up returning.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Luke at sunset
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_my_image_1.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_my_image_1.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A17">
+       At t = 0.02, the model changes the scene into a close-up that looks nothing like the original. At intermediate values, the standing figure starts looking more like a tall structure. By t = 0.25–0.50, the original scene becomes recognizable again.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Childhood portrait
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_my_image_2.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_my_image_2.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A18">
+       At lower starting times, the model changes the person's face quite a bit. As t increases, the edits become less noticeable. The original smile and framing stay mostly intact at higher values.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Web illustration · Yoda
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_web_image.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_web_image.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A19">
+       The strongest edit turns the illustration into a portrait. At intermediate times, the model keeps the red background and dark silhouette but changes how the scene looks. With higher values of t, the result stays closer to the original illustration instead of becoming a realistic photo.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Hand drawing · House
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_drawing_1.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_drawing_1.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A20">
+       At lower values of t, the model produces unrelated objects or distorts the original lines. Once t reaches around 0.06, the house becomes recognizable again. Even with a photo prompt, the model struggles to turn the simple sketch into a realistic image.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Hand drawing · Tree
+      </h3>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/edit_drawing_2.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/edit_drawing_2.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A21">
+       At t = 0.02–0.04, the model turns the tree outline into smooth, unrelated shapes. By t = 0.06, the tree starts looking recognizable again. At higher values, the results stay pretty close to my original drawing.
+      </p>
+     </article>
+    </section>
+    <section id="a-3-2">
+     <div class="section-head">
+      <span>
+       3.2
+      </span>
+      <h2>
+       Editing with a destination in mind
+      </h2>
+     </div>
+     <p data-copy-id="A22">
+      For this part, I used the same three images, noise seed, and seven starting times. I only changed the text prompt to see how much the model would follow the new description while keeping the original image.
+     </p>
+     <article>
+      <h3>
+       Campanile → rocket
+      </h3>
+      <blockquote>
+       a photograph of a tall rocket on a launch pad surrounded by trees under a blue sky
+      </blockquote>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/text_edit_campanile.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/text_edit_campanile.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A23">
+       At lower starting times, the Campanile turns into a rocket pretty clearly. Around t = 0.10–0.14, the results mix the tower's shape with rocket-like details. By t = 0.50, the original Campanile becomes the main focus again.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Desert → icy planet
+      </h3>
+      <blockquote>
+       a photograph of an astronaut beside a domed research station on an icy planet under green northern lights
+      </blockquote>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/text_edit_my_image_1.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/text_edit_my_image_1.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A24">
+       The earlier results show an astronaut and a dome-shaped station, with the strongest green lighting at t = 0.02. As t increases, the model keeps more of the original desert sunset and layout. Because of this, the later images don't fully match the icy-planet prompt.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Portrait → astronaut
+      </h3>
+      <blockquote>
+       a photograph of a smiling young astronaut wearing a white space suit inside a spacecraft, with Earth visible through a window
+      </blockquote>
+      <figure class="">
+       <a aria-label="Enlarge: Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." class="zoom" href="assets/text_edit_my_image_2.png">
+        <img alt="Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row." height="880" loading="lazy" src="assets/text_edit_my_image_2.png" width="1760"/>
+       </a>
+       <figcaption>
+        Original, then t = 0.02, 0.04, 0.06, 0.10, 0.14, 0.25, 0.50, read left to right across each row.
+       </figcaption>
+      </figure>
+      <p data-copy-id="A25">
+       The first three edits turn the person into an astronaut wearing a helmet, although the face looks quite different. At higher starting times, the original face is easier to recognize, but the astronaut outfit becomes less noticeable. The model also struggles to consistently include Earth through the window.
+      </p>
+     </article>
+    </section>
+    <section id="a-3-3">
+     <div class="section-head">
+      <span>
+       3.3
+      </span>
+      <h2>
+       Two readings, one image
+      </h2>
+     </div>
+     <p data-copy-id="A26">
+      For each Euler step, I calculate the guided velocity for the upright image and then do the same for the image rotated by 180°. I rotate the second velocity back and average the two predictions. The rotation only affects the image's height and width, leaving the batch and color channels unchanged.
+     </p>
+     <div class="equation">
+      v = ½[v
+      <sub>
+       CFG
+      </sub>
+      (x,t,c
+      <sub>
+       a
+      </sub>
+      ) + F(v
+      <sub>
+       CFG
+      </sub>
+      (F(x),t,c
+      <sub>
+       b
+      </sub>
+      ))]
+     </div>
+     <article>
+      <h3>
+       Wizard / castle
+      </h3>
+      <div class="two-up">
+       <figure class="">
+        <a aria-label="Enlarge: Upright · an oil painting of a bearded wizard's face" class="zoom" href="assets/anagram_0.png">
+         <img alt="Upright · an oil painting of a bearded wizard's face" height="512" loading="lazy" src="assets/anagram_0.png" width="512"/>
+        </a>
+        <figcaption>
+         Upright · an oil painting of a bearded wizard's face
+        </figcaption>
+       </figure>
+       <figure>
+        <a class="zoom" href="assets/anagram_0_rotated.png">
+         <img alt="Rotated 180 degrees: an oil painting of a mountain castle above a river" height="512" loading="lazy" src="assets/anagram_0_rotated.png" width="512"/>
+        </a>
+        <figcaption>
+         Rotated 180° · an oil painting of a mountain castle above a river
+        </figcaption>
+       </figure>
+      </div>
+      <p data-copy-id="A27">
+       The wizard is easy to recognize when the image is upright. After rotating it, the beard and hat start resembling parts of a landscape. However, the castle isn't very clear, so the illusion only works partially.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Lion / autumn forest
+      </h3>
+      <div class="two-up">
+       <figure class="">
+        <a aria-label="Enlarge: Upright · an oil painting of a lion's face" class="zoom" href="assets/anagram_1.png">
+         <img alt="Upright · an oil painting of a lion's face" height="512" loading="lazy" src="assets/anagram_1.png" width="512"/>
+        </a>
+        <figcaption>
+         Upright · an oil painting of a lion's face
+        </figcaption>
+       </figure>
+       <figure>
+        <a class="zoom" href="assets/anagram_1_rotated.png">
+         <img alt="Rotated 180 degrees: an oil painting of a golden autumn forest reflected in a lake" height="512" loading="lazy" src="assets/anagram_1_rotated.png" width="512"/>
+        </a>
+        <figcaption>
+         Rotated 180° · an oil painting of a golden autumn forest reflected in a lake
+        </figcaption>
+       </figure>
+      </div>
+      <p data-copy-id="A28">
+       The upright image clearly shows a lion. When rotated, the darker vertical shapes start looking like trees surrounding a bright lake reflection. This creates a more convincing illusion than the wizard and castle example.
+      </p>
+     </article>
+    </section>
+    <section id="a-3-4">
+     <div class="section-head">
+      <span>
+       3.4
+      </span>
+      <h2>
+       Different subjects at different scales
+      </h2>
+     </div>
+     <p data-copy-id="A29">
+      I combine the low-frequency parts of the distant prompt's guided velocity with the high-frequency parts of the close-up prompt's velocity. Both predictions use the same image and time step. For the Gaussian filter, I use a kernel size of 265 and a sigma of 16 on a 512 × 512 image.
+     </p>
+     <div class="equation">
+      v = G
+      <sub>
+       16
+      </sub>
+      (v
+      <sub>
+       a
+      </sub>
+      ) + v
+      <sub>
+       b
+      </sub>
+      − G
+      <sub>
+       16
+      </sub>
+      (v
+      <sub>
+       b
+      </sub>
+      )
+     </div>
+     <article>
+      <h3>
+       Lion / sunflowers
+      </h3>
+      <div class="hybrid">
+       <figure class="">
+        <a aria-label="Enlarge: Close · a lithograph of a field of sunflowers" class="zoom" href="assets/hybrid_0.png">
+         <img alt="Close · a lithograph of a field of sunflowers" height="512" loading="lazy" src="assets/hybrid_0.png" width="512"/>
+        </a>
+        <figcaption>
+         Close · a lithograph of a field of sunflowers
+        </figcaption>
+       </figure>
+       <figure class="distant">
+        <a aria-label="Enlarge: Distant (64 × 64) · a lithograph of a lion's face" class="zoom" href="assets/hybrid_0_distant.png">
+         <img alt="Distant (64 × 64) · a lithograph of a lion's face" height="64" loading="lazy" src="assets/hybrid_0_distant.png" width="64"/>
+        </a>
+        <figcaption>
+         Distant (64 × 64) · a lithograph of a lion's face
+        </figcaption>
+       </figure>
+      </div>
+      <p data-copy-id="A30">
+       Up close, the sunflower heads and stems are easy to see. From farther away, the larger shapes start forming something that resembles a face, although the lion isn't very clear. This illusion works less effectively than the other example and could probably improve with a different prompt or random seed.
+      </p>
+     </article>
+     <article>
+      <h3>
+       Sea turtle / ancient city
+      </h3>
+      <div class="hybrid">
+       <figure class="">
+        <a aria-label="Enlarge: Close · a lithograph of an ancient city with winding cobblestone streets" class="zoom" href="assets/hybrid_1.png">
+         <img alt="Close · a lithograph of an ancient city with winding cobblestone streets" height="512" loading="lazy" src="assets/hybrid_1.png" width="512"/>
+        </a>
+        <figcaption>
+         Close · a lithograph of an ancient city with winding cobblestone streets
+        </figcaption>
+       </figure>
+       <figure class="distant">
+        <a aria-label="Enlarge: Distant (64 × 64) · a lithograph of a sea turtle seen from above" class="zoom" href="assets/hybrid_1_distant.png">
+         <img alt="Distant (64 × 64) · a lithograph of a sea turtle seen from above" height="64" loading="lazy" src="assets/hybrid_1_distant.png" width="64"/>
+        </a>
+        <figcaption>
+         Distant (64 × 64) · a lithograph of a sea turtle seen from above
+        </figcaption>
+       </figure>
+      </div>
+      <p data-copy-id="A31">
+       Up close, the image shows buildings and winding paths that resemble an ancient city. From a distance, the overall shape starts looking like a sea turtle, with a shell and flippers. The city details are still visible, though, so the illusion doesn't completely switch between the two subjects.
+      </p>
+     </article>
+    </section>
+    <section class="partb-section" id="b-1-1">
+     <div class="section-head">
+      <span>
+       B 1.1
+      </span>
+      <h2>
+       Building the UNet
+      </h2>
+     </div>
+     <p data-copy-id="B1">
+      In Part A, I worked with a pretrained model. For this part, I built and trained my own models using MNIST, which contains 60,000 training images and 10,000 test images. Each image is 28 × 28 pixels with values between 0 and 1. My first goal was to train a UNet that could take a noisy digit and recover the clean version in a single forward pass.
+     </p>
+     <p data-copy-id="B2">
+      The encoder gradually shrinks the image from 28 × 28 to 14 × 14 and then 7 × 7. Average pooling reduces it further to a 1 × 1 bottleneck, while transposed convolutions bring it back to the original size. I also use skip connections to combine encoder and decoder features at matching resolutions. This helps the model keep important details, like the shape and position of each digit.
+     </p>
+     <div class="equation">
+      1 × 28 × 28 → D × 28 × 28 → D × 14 × 14 → 2D × 7 × 7 → 2D × 1 × 1 → decoder → 1 × 28 × 28
+     </div>
+     <p data-copy-id="B3">
+      Each convolution block uses batch normalization and GELU activation. For the final layer, I use a linear convolution without a sigmoid so the model can predict values freely. I followed the
+      <a href="https://cal-cs180.github.io/fa26/hw/proj3-flow/partb.html#11-implementing-the-unet">
+       course architecture
+      </a>
+      and included the full implementation in my
+      <a href="downloads/partb.ipynb">
+       submitted notebook
+      </a>
+      .
+     </p>
+    </section>
+    <section class="partb-section" id="b-1-2">
+     <div class="section-head">
+      <span>
+       B 1.2
+      </span>
+      <h2>
+       Adding Gaussian noise
+      </h2>
+     </div>
+     <p data-copy-id="B4">
+      To see how noise affects the images, I picked the first test example of each digit from 0 to 9. I kept the same Gaussian noise pattern and gradually increased σ. As σ gets larger, the digits become harder to recognize. Unlike the flow interpolation used later, this method adds noise without reducing the original image's contribution.
+     </p>
+     <div class="equation">
+      z = x + σε,   ε ∼ N(0, I)
+     </div>
+     <p data-copy-id="B5">
+      Each column represents a digit from 0 to 9. I clip the pixel values to [0, 1] only when displaying the images. The model itself receives the original noisy tensors without clipping.
+     </p>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.0 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.0.png">
+       <img alt="σ = 0.0 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.0.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.0 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.2 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.2.png">
+       <img alt="σ = 0.2 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.2.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.2 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.4 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.4.png">
+       <img alt="σ = 0.4 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.4.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.4 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.5 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.5.png">
+       <img alt="σ = 0.5 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.5.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.5 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.6 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.6.png">
+       <img alt="σ = 0.6 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.6.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.6 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.8 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_0.8.png">
+       <img alt="σ = 0.8 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_0.8.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 0.8 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 1.0 · Same test digits 0–9 and same underlying noise." class="zoom" href="assets/partb/noising_1.0.png">
+       <img alt="σ = 1.0 · Same test digits 0–9 and same underlying noise." height="166" loading="lazy" src="assets/partb/noising_1.0.png" width="1189"/>
+      </a>
+      <figcaption>
+       σ = 1.0 · Same test digits 0–9 and same underlying noise.
+      </figcaption>
+     </figure>
+    </section>
+    <section class="partb-section" id="b-1-2-1">
+     <div class="section-head">
+      <span>
+       B 1.2.1
+      </span>
+      <h2>
+       Learning one-step denoising
+      </h2>
+     </div>
+     <div class="settings">
+      <span>
+       D = 128
+      </span>
+      <span>
+       Batch size 256
+      </span>
+      <span>
+       5 epochs
+      </span>
+      <span>
+       Adam · lr 0.0001
+      </span>
+      <span>
+       Training noise σ = 0.5
+      </span>
+     </div>
+     <p data-copy-id="B6">
+      I trained the denoising model using only the shuffled MNIST training images. For every batch, I added fresh Gaussian noise and trained the model to recover the clean digits using mean squared error. I didn't use digit labels during training. To compare progress fairly, I kept the same ten test images across all checkpoints.
+     </p>
+     <div class="equation">
+      L = mean((Dθ(x + 0.5ε) − x)²)
+     </div>
+     <figure>
+      <a aria-label="Enlarge: Denoiser training loss over all 1,175 optimizer steps. Faint line: batch MSE; orange line: 100-step moving average." class="zoom" href="assets/partb/denoiser_loss.png">
+       <img alt="Denoiser training loss over all 1,175 optimizer steps. Faint line: batch MSE; orange line: 100-step moving average." height="290" loading="lazy" src="assets/partb/denoiser_loss.png" width="788"/>
+      </a>
+      <figcaption>
+       Denoiser training loss over all 1,175 optimizer steps. Faint line: batch MSE; orange line: 100-step moving average.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Epoch 1 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9." class="zoom" href="assets/partb/denoiser_epoch_1.png">
+       <img alt="Epoch 1 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9." height="334" loading="lazy" src="assets/partb/denoiser_epoch_1.png" width="980"/>
+      </a>
+      <figcaption>
+       Epoch 1 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Epoch 5 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9." class="zoom" href="assets/partb/denoiser_epoch_5.png">
+       <img alt="Epoch 5 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9." height="334" loading="lazy" src="assets/partb/denoiser_epoch_5.png" width="980"/>
+      </a>
+      <figcaption>
+       Epoch 5 · Rows: clean, noisy at σ = 0.5, reconstructed. Columns: digits 0–9.
+      </figcaption>
+     </figure>
+     <p data-copy-id="B7">
+      After just one epoch, the model already removes most of the visible noise. By epoch 5, the digits look noticeably smoother and are generally easy to recognize. The overall shapes are preserved, although some smaller stroke details still differ from the originals.
+     </p>
+    </section>
+    <section class="partb-section" id="b-1-2-2">
+     <div class="section-head">
+      <span>
+       B 1.2.2
+      </span>
+      <h2>
+       Testing unfamiliar noise levels
+      </h2>
+     </div>
+     <p data-copy-id="B8">
+      Next, I tested the epoch-5 model on several noise levels: σ = 0, 0.2, 0.4, 0.5, 0.6, 0.8, and 1.0. I used the same ten test images and base noise pattern for every grid. Since the model trained at σ = 0.5, that serves as the reference point. The other values let me see how well it handles noise levels it hasn't trained on.
+     </p>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.0.png">
+       <img alt="σ = 0.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.0.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.2 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.2.png">
+       <img alt="σ = 0.2 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.2.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.2 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.4 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.4.png">
+       <img alt="σ = 0.4 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.4.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.4 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.5 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.5.png">
+       <img alt="σ = 0.5 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.5.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.5 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.6 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.6.png">
+       <img alt="σ = 0.6 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.6.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.6 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 0.8 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_0.8.png">
+       <img alt="σ = 0.8 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_0.8.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 0.8 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: σ = 1.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." class="zoom" href="assets/partb/ood_1.0.png">
+       <img alt="σ = 1.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5." height="334" loading="lazy" src="assets/partb/ood_1.0.png" width="980"/>
+      </a>
+      <figcaption>
+       σ = 1.0 · Rows: clean, noisy input, denoised output. Columns: digits 0–9. Model trained at σ = 0.5.
+      </figcaption>
+     </figure>
+     <p data-copy-id="B9">
+      At lower noise levels, the model keeps most of the original digit shapes. When σ = 0, the first two rows look identical because no noise was added. Things become less reliable around σ = 0.8 and 1.0. Some strokes disappear or merge together, and a few outputs even start looking like different digits. With that much noise, the model has less information to work with.
+     </p>
+    </section>
+    <section class="partb-section" id="b-1-2-3">
+     <div class="section-head">
+      <span>
+       B 1.2.3
+      </span>
+      <h2>
+       What happens with pure noise?
+      </h2>
+     </div>
+     <div class="settings">
+      <span>
+       Fresh UNet · D = 128
+      </span>
+      <span>
+       Batch size 256
+      </span>
+      <span>
+       5 epochs
+      </span>
+      <span>
+       Adam · lr 0.0001
+      </span>
+     </div>
+     <p data-copy-id="B10">
+      For this experiment, I trained a separate model using completely random Gaussian noise as input and clean MNIST digits as targets. Unlike the earlier denoising task, the inputs contain no information about the actual digits. I used the same ten fixed noise samples at both checkpoints to see whether training changed the results.
+     </p>
+     <figure>
+      <a aria-label="Enlarge: Pure-noise training loss over 1,175 optimizer steps. Batch MSE and its 100-step moving average." class="zoom" href="assets/partb/pure_loss.png">
+       <img alt="Pure-noise training loss over 1,175 optimizer steps. Batch MSE and its 100-step moving average." height="290" loading="lazy" src="assets/partb/pure_loss.png" width="796"/>
+      </a>
+      <figcaption>
+       Pure-noise training loss over 1,175 optimizer steps. Batch MSE and its 100-step moving average.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Epoch 1 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs." class="zoom" href="assets/partb/pure_epoch_1.png">
+       <img alt="Epoch 1 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs." height="219" loading="lazy" src="assets/partb/pure_epoch_1.png" width="885"/>
+      </a>
+      <figcaption>
+       Epoch 1 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Epoch 5 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs." class="zoom" href="assets/partb/pure_epoch_5.png">
+       <img alt="Epoch 5 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs." height="219" loading="lazy" src="assets/partb/pure_epoch_5.png" width="885"/>
+      </a>
+      <figcaption>
+       Epoch 5 · Top row: fixed pure-noise inputs. Bottom row: predictions from those inputs.
+      </figcaption>
+     </figure>
+     <h3>
+      Observed pattern and explanation
+     </h3>
+     <p data-copy-id="B11">
+      The results look almost identical across different noise inputs. Instead of generating ten distinct digits, the model produces blurry shapes that resemble several digit strokes overlapping. Even after more training, the outputs don't turn into clear, recognizable digits.
+     </p>
+     <p data-copy-id="B12">
+      This makes sense because the random noise has no connection to the target digit. The model can't determine which digit it should generate from the input alone. With mean squared error, the best prediction is the average training image in this situation. That average combines features from digits 0 through 9, explaining the blurry shapes. The loss can still decrease, but that doesn't mean the model has learned to generate meaningful digits.
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-1">
+     <div class="section-head">
+      <span>
+       B 2.1
+      </span>
+      <h2>
+       Giving the UNet a sense of time
+      </h2>
+     </div>
+     <p data-copy-id="B13">
+      Instead of predicting a clean image all at once, the flow model learns to predict how the image should change over time. During training, I mix a random Gaussian image x₀ with a clean digit x₁ using a randomly chosen time t. At t = 0, the image is pure noise. At t = 1, it becomes the clean digit.
+     </p>
+     <div class="equation">
+      xₜ = (1 − t)x₀ + tx₁,   t ∼ U[0, 1]
+      <br/>
+      Target velocity: u = x₁ − x₀
+     </div>
+     <p data-copy-id="B14">
+      I kept the original UNet structure and added two fully connected blocks to give it information about time. Each block follows Linear → GELU → Linear. One converts t into 2D values, while the other produces D values. I reshape these embeddings so they can multiply the features at the unflatten layer and the first up-block.
+     </p>
+     <div class="equation">
+      u₀ ← u₀ ⊙ FC₁(t),   u₁ ← u₁ ⊙ FC₂(t)
+     </div>
+     <p data-copy-id="B15">
+      I placed the time embeddings in the locations shown in the
+      <a href="https://cal-cs180.github.io/fa26/hw/proj3-flow/partb.html#21-adding-time-conditioning-to-unet">
+       course architecture diagram
+      </a>
+      . This model only uses time conditioning, so I don't provide any digit labels.
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-2">
+     <div class="section-head">
+      <span>
+       B 2.2
+      </span>
+      <h2>
+       Training the time-conditioned model
+      </h2>
+     </div>
+     <div class="settings">
+      <span>
+       D = 64
+      </span>
+      <span>
+       Batch size 64
+      </span>
+      <span>
+       10 epochs
+      </span>
+      <span>
+       Adam · initial lr 0.01
+      </span>
+      <span>
+       Exponential γ = 0.1^(1/10)
+      </span>
+     </div>
+     <p data-copy-id="B16">
+      For every training batch, I generate fresh Gaussian noise and sample a different time for each image. The model predicts the velocity needed to move from the noise toward the clean digit. I train it using mean squared error between its predicted velocity and the target x₁ − x₀. The exponential learning-rate scheduler updates after each epoch. With 938 batches per epoch, the model completes 9,380 optimizer updates.
+     </p>
+     <div class="equation">
+      L = mean((uθ(xₜ, t) − (x₁ − x₀))²)
+     </div>
+     <figure>
+      <a aria-label="Enlarge: Time-conditioned model · Batch velocity MSE and 100-step moving average over all 10 epochs." class="zoom" href="assets/partb/time_loss.png">
+       <img alt="Time-conditioned model · Batch velocity MSE and 100-step moving average over all 10 epochs." height="290" loading="lazy" src="assets/partb/time_loss.png" width="776"/>
+      </a>
+      <figcaption>
+       Time-conditioned model · Batch velocity MSE and 100-step moving average over all 10 epochs.
+      </figcaption>
+     </figure>
+     <p data-copy-id="B17">
+      The training loss falls quickly during the first few epochs and then decreases more slowly as training continues. Since this model predicts velocity rather than reconstructing clean images directly, its loss values aren't directly comparable to the earlier denoising model.
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-3">
+     <div class="section-head">
+      <span>
+       B 2.3
+      </span>
+      <h2>
+       Generating digits with Euler steps
+      </h2>
+     </div>
+     <p data-copy-id="B18">
+      To generate new digits, I start with 40 random Gaussian images. The UNet predicts how each image should change at the current time, and I use that velocity to update it. I repeat this process for 50 Euler steps, moving from t = 0 to t = 1 with a step size of 1/50. I also keep the seed fixed at 0 so each checkpoint starts from the same noise.
+     </p>
+     <div class="equation">
+      xₜ₊Δₜ = xₜ + Δt · uθ(xₜ, t),   Δt = 1/50
+     </div>
+     <figure>
+      <a aria-label="Enlarge: Time-conditioned generation · Epoch 1, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." class="zoom" href="assets/partb/time_epoch_1.png">
+       <img alt="Time-conditioned generation · Epoch 1, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." height="449" loading="lazy" src="assets/partb/time_epoch_1.png" width="1029"/>
+      </a>
+      <figcaption>
+       Time-conditioned generation · Epoch 1, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Time-conditioned generation · Epoch 5, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." class="zoom" href="assets/partb/time_epoch_5.png">
+       <img alt="Time-conditioned generation · Epoch 5, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." height="449" loading="lazy" src="assets/partb/time_epoch_5.png" width="1029"/>
+      </a>
+      <figcaption>
+       Time-conditioned generation · Epoch 5, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Time-conditioned generation · Epoch 10, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." class="zoom" href="assets/partb/time_epoch_10.png">
+       <img alt="Time-conditioned generation · Epoch 10, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels." height="449" loading="lazy" src="assets/partb/time_epoch_10.png" width="1029"/>
+      </a>
+      <figcaption>
+       Time-conditioned generation · Epoch 10, 40 samples, 50 Euler steps, seed 0. Columns have no assigned digit labels.
+      </figcaption>
+     </figure>
+     <p data-copy-id="B19">
+      After epoch 1, many generated digits have broken strokes or unclear shapes. As training continues, more recognizable digits appear, although some still look distorted or incomplete. Overall, this works much better than trying to generate digits from pure noise in a single step. Still, time conditioning alone doesn't produce consistently clean results.
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-4">
+     <div class="section-head">
+      <span>
+       B 2.4
+      </span>
+      <h2>
+       Adding a requested digit
+      </h2>
+     </div>
+     <p data-copy-id="B20">
+      To control which digit the model generates, I represent each label using a ten-element one-hot vector. I then add two fully connected blocks to process this class information. The class embeddings scale the decoder features, while the time embeddings are added at the same two locations. This allows the model to use both the requested digit and the current time when predicting velocity.
+     </p>
+     <div class="equation">
+      u₀ ← FCclass,1(c) ⊙ u₀ + FCtime,1(t)
+      <br/>
+      u₁ ← FCclass,2(c) ⊙ u₁ + FCtime,2(t)
+     </div>
+     <p data-copy-id="B21">
+      During training, I randomly remove the class information for 10% of the examples by replacing the entire one-hot vector with zeros. I leave the time input unchanged. This teaches the same model to make predictions both with and without a digit label, which is necessary for classifier-free guidance (CFG).
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-5">
+     <div class="section-head">
+      <span>
+       B 2.5
+      </span>
+      <h2>
+       Training with digit labels
+      </h2>
+     </div>
+     <div class="settings">
+      <span>
+       D = 64
+      </span>
+      <span>
+       Batch size 64
+      </span>
+      <span>
+       10 epochs per model
+      </span>
+      <span>
+       Class dropout 0.1
+      </span>
+      <span>
+       MNIST training split only
+      </span>
+     </div>
+     <p data-copy-id="B22">
+      I kept the same velocity MSE loss and trained two separate models to compare learning-rate strategies. The first uses Adam with an initial learning rate of 0.01 and exponential decay of γ = 0.1^(1/10). The second uses Adam with a constant learning rate of 0.001. Both models train for 9,380 optimizer updates, and I save checkpoints after epochs 1, 5, and 10.
+     </p>
+     <figure>
+      <a aria-label="Enlarge: With scheduler · Class-conditioned training loss across 10 epochs. Initial learning rate 0.01; exponential decay after each epoch." class="zoom" href="assets/partb/class_loss.png">
+       <img alt="With scheduler · Class-conditioned training loss across 10 epochs. Initial learning rate 0.01; exponential decay after each epoch." height="290" loading="lazy" src="assets/partb/class_loss.png" width="790"/>
+      </a>
+      <figcaption>
+       With scheduler · Class-conditioned training loss across 10 epochs. Initial learning rate 0.01; exponential decay after each epoch.
+      </figcaption>
+     </figure>
+     <figure>
+      <a aria-label="Enlarge: Without scheduler · Class-conditioned training loss across 10 epochs. Constant learning rate 0.001." class="zoom" href="assets/partb/constant_loss.png">
+       <img alt="Without scheduler · Class-conditioned training loss across 10 epochs. Constant learning rate 0.001." height="290" loading="lazy" src="assets/partb/constant_loss.png" width="790"/>
+      </a>
+      <figcaption>
+       Without scheduler · Class-conditioned training loss across 10 epochs. Constant learning rate 0.001.
+      </figcaption>
+     </figure>
+     <p data-copy-id="B23">
+      Both training losses drop over time and eventually settle at lower values. The curves show that both setups learn the velocity prediction task. However, these are independently trained models, so they also differ in initialization and randomly sampled noise. This means the comparison isn't controlled for learning rate alone.
+     </p>
+    </section>
+    <section class="partb-section" id="b-2-6">
+     <div class="section-head">
+      <span>
+       B 2.6
+      </span>
+      <h2>
+       Guided sampling and the scheduler comparison
+      </h2>
+     </div>
+     <p data-copy-id="B24">
+      For each digit, I generate four samples and arrange them in a grid with four rows and ten columns. Each row shows digits 0 through 9 in order. I use 300 Euler steps with a guidance scale of 5. I also fix the seed at 0 for every checkpoint and both models, keeping the initial noise consistent.
+     </p>
+     <div class="equation">
+      uCFG = uuncond + 5(ucond − uuncond)
+      <br/>
+      xₜ₊Δₜ = xₜ + Δt · uCFG,   Δt = 1/300
+     </div>
+     <p data-copy-id="B25">
+      For classifier-free guidance, I calculate two velocity predictions at each step. One uses the requested digit's one-hot label, while the other uses an all-zero class vector. Both predictions use the same image and time. The zero vector represents the unconditional prediction, not the digit 0.
+     </p>
+     <article>
+      <h3>
+       Epoch 1
+      </h3>
+      <div class="b-comparison">
+       <figure>
+        <a aria-label="Enlarge: With scheduler · Epoch 1. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/class_epoch_1.png">
+         <img alt="With scheduler · Epoch 1. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/class_epoch_1.png" width="1029"/>
+        </a>
+        <figcaption>
+         With scheduler · Epoch 1. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+       <figure>
+        <a aria-label="Enlarge: Without scheduler · Epoch 1. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/constant_epoch_1.png">
+         <img alt="Without scheduler · Epoch 1. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/constant_epoch_1.png" width="1029"/>
+        </a>
+        <figcaption>
+         Without scheduler · Epoch 1. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+      </div>
+     </article>
+     <article>
+      <h3>
+       Epoch 5
+      </h3>
+      <div class="b-comparison">
+       <figure>
+        <a aria-label="Enlarge: With scheduler · Epoch 5. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/class_epoch_5.png">
+         <img alt="With scheduler · Epoch 5. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/class_epoch_5.png" width="1029"/>
+        </a>
+        <figcaption>
+         With scheduler · Epoch 5. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+       <figure>
+        <a aria-label="Enlarge: Without scheduler · Epoch 5. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/constant_epoch_5.png">
+         <img alt="Without scheduler · Epoch 5. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/constant_epoch_5.png" width="1029"/>
+        </a>
+        <figcaption>
+         Without scheduler · Epoch 5. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+      </div>
+     </article>
+     <article>
+      <h3>
+       Epoch 10
+      </h3>
+      <div class="b-comparison">
+       <figure>
+        <a aria-label="Enlarge: With scheduler · Epoch 10. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/class_epoch_10.png">
+         <img alt="With scheduler · Epoch 10. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/class_epoch_10.png" width="1029"/>
+        </a>
+        <figcaption>
+         With scheduler · Epoch 10. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+       <figure>
+        <a aria-label="Enlarge: Without scheduler · Epoch 10. Four instances per digit; columns 0–9." class="zoom" href="assets/partb/constant_epoch_10.png">
+         <img alt="Without scheduler · Epoch 10. Four instances per digit; columns 0–9." height="449" loading="lazy" src="assets/partb/constant_epoch_10.png" width="1029"/>
+        </a>
+        <figcaption>
+         Without scheduler · Epoch 10. Four instances per digit; columns 0–9.
+        </figcaption>
+       </figure>
+      </div>
+     </article>
+     <h3>
+      Removing the learning-rate scheduler
+     </h3>
+     <p data-copy-id="B26">
+      To test training without the exponential scheduler, I changed Adam's learning rate from an initial 0.01 to a constant 0.001. I kept everything else the same, including the architecture, batch size, training duration, class dropout, Euler steps, guidance scale, and sampling seed. This lets me compare the two training setups while keeping the other settings consistent.
+     </p>
+     <p data-copy-id="B27">
+      Looking at the saved grids, both models generate digits that mostly match their requested labels. Some earlier samples look uneven or have incomplete strokes, but the later checkpoints produce clearer shapes. The model without a scheduler still generates fairly recognizable digits, so removing the decay doesn't seem to hurt the visual results much in this experiment. However, many samples within the same digit class look similar. Since I only compared these saved runs, I can't conclude that both models would perform equally well across different seeds or on a quantitative accuracy test.
+     </p>
+    </section>
+    <footer>
+     NEERAL BHALGAT
+     <span>
+      CS180 · PROJECT 3
+     </span>
+    </footer>
+   </main>
+  </div>
+  <dialog id="viewer">
+   <button autofocus="" id="close">
+    Close ×
+   </button>
+   <img alt=""/>
+   <p>
+   </p>
+  </dialog>
+  <script src="script.js">
+  </script>
+ </body>
+</html>

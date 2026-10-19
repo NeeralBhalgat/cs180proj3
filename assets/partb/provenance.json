@@ -1,0 +1,230 @@
+{
+  "notebook": "partb (3).ipynb",
+  "sha256": "7e936094589473b11d0abdebbe0dcbd7e29dc683bf66a39a51e5f48e0ec912dd",
+  "class_samples_precede_latest_training": false,
+  "figures": [
+    {
+      "file": "noising_0.0.png",
+      "cell": 14,
+      "output": 0,
+      "execution": 57,
+      "sha256": "0d4639d1e0ab1b6f27b4968f6966e48cbe4d42a7e1f4a844cec2ae1102cffaa9"
+    },
+    {
+      "file": "noising_0.2.png",
+      "cell": 14,
+      "output": 1,
+      "execution": 57,
+      "sha256": "d488c67c6adf2c1bdb931f0abbecd1df41145d1020d948a8bfa12af35ac55985"
+    },
+    {
+      "file": "noising_0.4.png",
+      "cell": 14,
+      "output": 2,
+      "execution": 57,
+      "sha256": "5883ad8ed1939d977bb77bf4eb152b9b6e5790cf2d4289cf81f05d13def9eace"
+    },
+    {
+      "file": "noising_0.5.png",
+      "cell": 14,
+      "output": 3,
+      "execution": 57,
+      "sha256": "7c7f26c2fa41b69bded2715213898365d8133ae44f2a4125a9bef4ec8f028a9f"
+    },
+    {
+      "file": "noising_0.6.png",
+      "cell": 14,
+      "output": 4,
+      "execution": 57,
+      "sha256": "ef519ff48171941a6e4913fc9c630bdf94fd12d8f6f8cbe117beec01ca95b5e4"
+    },
+    {
+      "file": "noising_0.8.png",
+      "cell": 14,
+      "output": 5,
+      "execution": 57,
+      "sha256": "423a9bbff1ed785fb5b4130f474db149610c3f28ee4318973ef1ab47f3035dcc"
+    },
+    {
+      "file": "noising_1.0.png",
+      "cell": 14,
+      "output": 6,
+      "execution": 57,
+      "sha256": "d3828d6a5b4fdf0027f6e3369ac3aa4cc6d1e36ee80c0189358e8c5f51b8d3de"
+    },
+    {
+      "file": "denoiser_epoch_1.png",
+      "cell": 22,
+      "output": 1,
+      "execution": 62,
+      "sha256": "570e849625b5845d1a7756b007e5c9477f4817874818afbc28e132d18af1992c"
+    },
+    {
+      "file": "denoiser_epoch_5.png",
+      "cell": 22,
+      "output": 6,
+      "execution": 62,
+      "sha256": "f70fc60f4b76b5e96fe30148c6af5cf42c59cfd533689f4e8a57356c166ee30f"
+    },
+    {
+      "file": "denoiser_loss.png",
+      "cell": 23,
+      "output": 0,
+      "execution": 63,
+      "sha256": "82392b0dd19ba8b80f775faf2892178ce0a59c8df281312e245aa08c8b2f12d7"
+    },
+    {
+      "file": "ood_0.0.png",
+      "cell": 25,
+      "output": 0,
+      "execution": 64,
+      "sha256": "f0f0ec0dbaed9e3e1a5fd403c503d8bce209421437587d37e367069938166d4a"
+    },
+    {
+      "file": "ood_0.2.png",
+      "cell": 25,
+      "output": 1,
+      "execution": 64,
+      "sha256": "e3a7e184153659577f352efe7081a2a049cc427bd293d959832c62cfd763420a"
+    },
+    {
+      "file": "ood_0.4.png",
+      "cell": 25,
+      "output": 2,
+      "execution": 64,
+      "sha256": "951ff6e4cf9ff7c5796f9041343522fdb719bf1b8402197d23ad5cf33a5a0575"
+    },
+    {
+      "file": "ood_0.5.png",
+      "cell": 25,
+      "output": 3,
+      "execution": 64,
+      "sha256": "a036c86ca3e126dfbcb30f04e8cbb985f3e0442e815db1f585259e57994893e9"
+    },
+    {
+      "file": "ood_0.6.png",
+      "cell": 25,
+      "output": 4,
+      "execution": 64,
+      "sha256": "e65779129617a5f6ce0daf7d39330467a5d63bd0e6ef470a3b7ddc25f95c4b0c"
+    },
+    {
+      "file": "ood_0.8.png",
+      "cell": 25,
+      "output": 5,
+      "execution": 64,
+      "sha256": "195c50dc5aef24137c53ccc817d103b3c69bd1c0254655be6a1e6886783db5a9"
+    },
+    {
+      "file": "ood_1.0.png",
+      "cell": 25,
+      "output": 6,
+      "execution": 64,
+      "sha256": "1f40cd5279e9661b49abb8aa348e85bd251ca58fd7f1fce0d4294324057cfc9e"
+    },
+    {
+      "file": "pure_epoch_1.png",
+      "cell": 27,
+      "output": 1,
+      "execution": 65,
+      "sha256": "3688dea1ccf1b4f8b2a8695230f62174975497944a222ebadc328a10fdb0bbb5"
+    },
+    {
+      "file": "pure_epoch_5.png",
+      "cell": 27,
+      "output": 3,
+      "execution": 65,
+      "sha256": "ba072176b89486789e8fc701e658fa4a4342d5bd7733954002a737762eaf392e"
+    },
+    {
+      "file": "pure_loss.png",
+      "cell": 27,
+      "output": 4,
+      "execution": 65,
+      "sha256": "e7651e99f27d2d9d40bd5050bbda1f7b111303a94feac0650f3224e2f6400bf3"
+    },
+    {
+      "file": "time_epoch_1.png",
+      "cell": 38,
+      "output": 0,
+      "execution": 90,
+      "sha256": "b61b07f1170f9090a533026d7b9d61d9ee77c875d3676b357224f18a4561277d"
+    },
+    {
+      "file": "time_epoch_5.png",
+      "cell": 38,
+      "output": 1,
+      "execution": 90,
+      "sha256": "bfbfdb22dde35532a29c7fd493ce4708b0a4d30251e18b5e35e631706b60eab2"
+    },
+    {
+      "file": "time_epoch_10.png",
+      "cell": 38,
+      "output": 2,
+      "execution": 90,
+      "sha256": "286f6e324f12ef44f59cd96c3002b1cc6c0a6ae86e409ae51aed7f1d71ea2bcc"
+    },
+    {
+      "file": "time_loss.png",
+      "cell": 36,
+      "output": 23,
+      "execution": 89
+    },
+    {
+      "file": "class_loss.png",
+      "cell": 46,
+      "output": 20,
+      "execution": 100,
+      "sha256": "6c425e0d3cfb13ea499f10e27e24a778697d392654bb69a7e2afd1bf8137b8fa"
+    },
+    {
+      "file": "constant_loss.png",
+      "cell": 46,
+      "output": 41,
+      "execution": 100,
+      "sha256": "838f94ca910d793b504e45ccaaa146061e951c2e8c4edaf444143e9ff367f5be"
+    },
+    {
+      "file": "class_epoch_1.png",
+      "cell": 49,
+      "output": 0,
+      "execution": 101,
+      "sha256": "309675f21e8d1c56219b6b30cd8cde3e3e7029891559a81ceec92f6241dc537e"
+    },
+    {
+      "file": "constant_epoch_1.png",
+      "cell": 49,
+      "output": 1,
+      "execution": 101,
+      "sha256": "41e5124f4a9d14cb62d504a2ea377cc51751acebdb9fc194af8566e79a76b2c1"
+    },
+    {
+      "file": "class_epoch_5.png",
+      "cell": 49,
+      "output": 2,
+      "execution": 101,
+      "sha256": "fa5eda9b4e3d37c4427d4435e69f0b334ac59acba2fed26fa8cccad03ce50139"
+    },
+    {
+      "file": "constant_epoch_5.png",
+      "cell": 49,
+      "output": 3,
+      "execution": 101,
+      "sha256": "d142182bca76714b5d2072f6a0645995d5ec220d593576ac159d1d3b4f0daf38"
+    },
+    {
+      "file": "class_epoch_10.png",
+      "cell": 49,
+      "output": 4,
+      "execution": 101,
+      "sha256": "504b2f9c977ba406f7accd7feecb5684a89a3e2826ff16a935d12ce006160703"
+    },
+    {
+      "file": "constant_epoch_10.png",
+      "cell": 49,
+      "output": 5,
+      "execution": 101,
+      "sha256": "cd129b8eec82b221fa60c4b25991987bd83f931f52bc27d87e280fa1a7b467b0"
+    }
+  ]
+}
