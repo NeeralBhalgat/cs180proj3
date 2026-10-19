@@ -337,7 +337,7 @@
       </h2>
      </div>
      <p data-copy-id="A5">
-      We modify the pretrained model to predict velocity from the current image, the time, and a prompt - "a high quality photo". We estimate the clean endpoint in 1 shot after predicting the velocity.
+      We use the pretrained model to predict velocity from the current image, the time, and a prompt - "a high quality photo". We estimate the clean endpoint in 1 shot after predicting the velocity.
      </p>
      <div class="equation">
       x̂
@@ -536,7 +536,7 @@
       </tbody>
      </table>
      <p data-copy-id="A10">
-      Both one step and euler are clearly better than blur. One-step has the lowest MSE in this run, so Euler is not automatically better. Integrating a learned field means following its preferred image trajectory, and this can lead to images that are not exactly similar to the original. However, I do believe if our image had much more finer details, the Euler reconstruction would be most accurate.
+      Both one step and euler are clearly better than blur. One-step has the lowest MSE in this run, so Euler is not automatically better. Integrating a learned field means following its preferred image trajectory, and this can lead to images that are not exactly similar to the original.
      </p>
     </section>
     <section id="a-1-6">
